@@ -23,7 +23,7 @@ It is a backend learning project. The current implementation aims to allow SELEC
 | Framework | Spring Boot 3.5.5 |
 | HTTP and validation | Spring Web, Jakarta Bean Validation |
 | Database | MySQL Connector/J, Spring JDBC / JdbcTemplate |
-| Dependencies | Spring Data JPA and Spring Boot Test are declared; no entity classes or test sources are currently committed |
+| Dependencies | Spring Data JPA and Spring Boot Test are declared; no entity classes are committed; unit tests use JUnit 5 and Mockito |
 | AI client | Spring RestClient and Jackson |
 | Entry point | [QueryPilotApplication.java](src/main/java/org/querypilot/QueryPilotApplication.java) |
 | API | [QueryController.java](src/main/java/org/querypilot/controller/QueryController.java), [HomeController.java](src/main/java/org/querypilot/controller/HomeController.java) |
@@ -225,8 +225,20 @@ Do not interpret HTTP 200 alone as successful SQL execution; inspect `message` a
 - Generated SQL is executed immediately after checks, without a separate preview/approval step.
 - The schema is rediscovered on each request. AI calls have no explicit retry or timeout policy in the application code.
 - Query results are materialized in memory; no pagination or maximum-row policy is implemented.
-- No frontend, screenshots, automated tests, CI workflow, or Postman collection is committed in the inspected tree.
+- No frontend, screenshots, or Postman collection is committed. Unit tests and a Java 21 CI workflow are included; live integration coverage is still missing.
 - No license file is present; this README does not assert an open-source license.
+
+## Automated tests
+
+Run with JDK 21 and Maven:
+
+```sh
+mvn clean verify
+```
+
+The [JUnit 5 / Mockito tests](src/test/java/org/querypilot) cover SQL normalization and rejection, orchestration with discovered schema, successful and empty results, and failure paths. Rejected queries are checked to ensure they never reach the executor or JDBC. Database and AI collaborators are mocked: tests require no API keys, MySQL server, or paid provider calls.
+
+[GitHub Actions](.github/workflows/java.yml) compiles, tests, and packages the application on Java 21 for pushes and pull requests, and uploads Surefire reports. These are bounded unit tests, not proof that the keyword filters are a complete security boundary or that live MySQL/DeepSeek integration works.
 
 ## Verification and troubleshooting
 
@@ -245,7 +257,7 @@ This README was checked against the source, configuration, DTOs, and Maven proje
 
 These are proposed work, not implemented features:
 
-1. Add unit and integration tests, then automated build/test checks.
+1. Expand coverage with HTTP, MySQL, and AI-provider integration tests.
 2. Map request-validation errors to a consistent HTTP 400 response.
 3. Replace keyword filtering with structured SQL validation and explicit allowed operations/tables.
 4. Add query timeouts, row limits, authentication, and rate limiting.
