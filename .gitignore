@@ -31,3 +31,12 @@ Thumbs.db
 # API keys / credentials
 *.key
 *.pem
+
+# Local setup secrets and smoke-test output
+.env
+.env.*
+!.env.example
+.smoke/
+
+__pycache__/
+*.pyc

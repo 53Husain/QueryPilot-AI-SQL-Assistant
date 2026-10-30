@@ -1,0 +1,46 @@
+{
+  "info": {
+    "name": "QueryPilot demo API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8083"
+    }
+  ],
+  "item": [
+    {
+      "name": "HTTP startup check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/",
+        "description": ""
+      }
+    },
+    {
+      "name": "Ask about demo employees (real provider call)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/query",
+        "description": "Requires your own configured provider key. Sends question and schema to the provider and may incur a charge. HTTP 200 alone does not establish successful execution.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"question\": \"Show the names and salaries of employees earning more than 50000.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 # QueryPilot — AI SQL Assistant
 
+**Quick start:** [Local MySQL with Docker Compose + Maven Wrapper](docs/local-setup.md) · [Postman API examples](docs/api-examples.md)
+
 QueryPilot is a Java/Spring Boot REST API that turns a natural-language question into SQL using DeepSeek, checks the generated statement, executes it against MySQL, and returns rows as JSON.
 
 It is a backend learning project. The current implementation aims to allow SELECT queries, but its string-based validation is not a complete SQL security boundary. Use a dedicated read-only database account and a non-sensitive demo database.
@@ -19,7 +21,7 @@ It is a backend learning project. The current implementation aims to allow SELEC
 
 | Component | Implementation |
 | --- | --- |
-| Java / build | Java 21, Maven; no Maven wrapper included |
+| Java / build | Java 21, Maven Wrapper (Maven 3.9.9) |
 | Framework | Spring Boot 3.5.5 |
 | HTTP and validation | Spring Web, Jakarta Bean Validation |
 | Database | MySQL Connector/J, Spring JDBC / JdbcTemplate |
@@ -48,18 +50,18 @@ Schema discovery includes base tables and column types. It does not collect fore
 
 ### 1. Prerequisites and clone
 
-You need JDK 21, Maven, a running MySQL server, and your own DeepSeek API key with API access.
+You need JDK 21, a running MySQL server, and your own DeepSeek API key with API access.
 
 ```sh
 git clone https://github.com/53Husain/QueryPilot-AI-SQL-Assistant.git
 cd QueryPilot-AI-SQL-Assistant
 java -version
-mvn -version
+./mvnw -version
 ```
 
 ### 2. Prepare a demo database
 
-The repository's [schema.sql](src/main/resources/schema.sql) is empty. There are no entity classes or seed scripts that create the example tables automatically.
+The repository's [schema.sql](src/main/resources/schema.sql) is empty. There are no entity classes. The optional Compose setup seeds a synthetic employees table through `dev/mysql/`; the manual setup below remains available.
 
 Using a database administrator account, create your own demo database and tables. The following is **optional sample data for this README**, not an existing repository dataset. Run it only in a fresh demo database:
 
@@ -105,7 +107,7 @@ export SPRING_JPA_HIBERNATE_DDL_AUTO='none'
 
 Replace the uppercase example values locally. Do not commit real passwords or API keys.
 
-[.env.example](.env.example) is a reference only: **copying it to `.env` does not load it automatically**. The inspected project contains no dotenv loader or configuration import. Set variables in the terminal that starts Maven, or in your IDE's run configuration.
+[.env.example](.env.example) is a reference only: **the default profile does not load `.env`; the opt-in `local` profile does**. See the local setup guide for the profile-specific configuration import. Set variables in the terminal that starts Maven, or in your IDE's run configuration.
 
 | Setting | Committed value / purpose |
 | --- | --- |
@@ -123,13 +125,13 @@ The committed connection URL is for local development and disables SSL. Configur
 ### 4. Run
 
 ```sh
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 Or package and launch:
 
 ```sh
-mvn clean package
+./mvnw clean package
 java -jar target/querypilot-0.0.1-SNAPSHOT.jar
 ```
 
@@ -225,7 +227,7 @@ Do not interpret HTTP 200 alone as successful SQL execution; inspect `message` a
 - Generated SQL is executed immediately after checks, without a separate preview/approval step.
 - The schema is rediscovered on each request. AI calls have no explicit retry or timeout policy in the application code.
 - Query results are materialized in memory; no pagination or maximum-row policy is implemented.
-- No frontend, screenshots, or Postman collection is committed. Unit tests and a Java 21 CI workflow are included; live integration coverage is still missing.
+- No frontend or screenshots are committed. A Postman collection is available in `docs/`. Unit tests and a Java 21 CI workflow are included; CI also checks local MySQL with a mocked AI provider; live provider coverage is still missing.
 - No license file is present; this README does not assert an open-source license.
 
 ## Automated tests
@@ -233,7 +235,7 @@ Do not interpret HTTP 200 alone as successful SQL execution; inspect `message` a
 Run with JDK 21 and Maven:
 
 ```sh
-mvn clean verify
+./mvnw clean verify
 ```
 
 The [JUnit 5 / Mockito tests](src/test/java/org/querypilot) cover SQL normalization and rejection, orchestration with discovered schema, successful and empty results, and failure paths. Rejected queries are checked to ensure they never reach the executor or JDBC. Database and AI collaborators are mocked: tests require no API keys, MySQL server, or paid provider calls.
