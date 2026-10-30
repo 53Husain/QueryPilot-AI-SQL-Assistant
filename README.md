@@ -2,6 +2,8 @@
 
 **Quick start:** [Local MySQL with Docker Compose + Maven Wrapper](docs/local-setup.md) · [Postman API examples](docs/api-examples.md)
 
+Commands below use `./mvnw` on Linux/macOS; use `.\mvnw.cmd` on Windows PowerShell.
+
 QueryPilot is a Java/Spring Boot REST API that turns a natural-language question into SQL using DeepSeek, checks the generated statement, executes it against MySQL, and returns rows as JSON.
 
 It is a backend learning project. The current implementation aims to allow SELECT queries, but its string-based validation is not a complete SQL security boundary. Use a dedicated read-only database account and a non-sensitive demo database.
@@ -232,7 +234,7 @@ Do not interpret HTTP 200 alone as successful SQL execution; inspect `message` a
 
 ## Automated tests
 
-Run with JDK 21 and Maven:
+Run with JDK 21 and the included Maven wrapper:
 
 ```sh
 ./mvnw clean verify
@@ -244,12 +246,12 @@ The [JUnit 5 / Mockito tests](src/test/java/org/querypilot) cover SQL normalizat
 
 ## Verification and troubleshooting
 
-This README was checked against the source, configuration, DTOs, and Maven project file. The MySQL/DeepSeek workflow was **not run during this documentation update**. Example SQL output and JSON data above are illustrative, and no benchmark or model-accuracy claim is made.
+This README was checked against the source, configuration, DTOs, and Maven project file. CI checks the Compose MySQL setup with a mocked provider; a real DeepSeek call remains unverified. Example SQL output and JSON data above are illustrative, and no benchmark or model-accuracy claim is made.
 
 | Symptom | Check |
 | --- | --- |
 | Java release/build error | Both Maven and Java must use JDK 21 |
-| Missing configuration value | Export the variables before starting the process; `.env` is not automatically loaded |
+| Missing configuration value | Use the local profile to import `.env`, or export variables before starting the default profile |
 | Cannot connect to MySQL | Database existence, URL, local server, account host permissions, and password |
 | Empty database / unavailable schema | Create at least one base table and check metadata visibility for the application account |
 | AI generation failure | API key, provider access, outbound connectivity, configured URL/model |

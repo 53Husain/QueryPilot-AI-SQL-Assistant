@@ -49,7 +49,20 @@ class Client:
 provider_requests = []
 class Provider(BaseHTTPRequestHandler):
     def do_POST(self):
-        payload = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+        if self.headers.get('Transfer-Encoding', '').lower() == 'chunked':
+            chunks = []
+            while True:
+                size = int(self.rfile.readline().split(b';', 1)[0], 16)
+                if size == 0:
+                    while self.rfile.readline().strip():
+                        pass
+                    break
+                chunks.append(self.rfile.read(size))
+                assert self.rfile.read(2) == b'\r\n'
+            raw = b''.join(chunks)
+        else:
+            raw = self.rfile.read(int(self.headers['Content-Length']))
+        payload = json.loads(raw)
         provider_requests.append(payload)
         body = json.dumps({'choices': [{'message': {'content': 'SELECT name, salary FROM employees WHERE salary > 50000'}}]}).encode()
         self.send_response(200)
